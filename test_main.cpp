@@ -20,10 +20,21 @@ TEST(StrUtilsTest, trimFuncTest)
 	EXPECT_STREQ("example string", testStr.c_str());
 }
 
+TEST(StrUtilsTest, indexOfFuncTest)
+{
+	const char* strs[] = {"str1", "str2" ,"str3", "str4"};
+	const int len = 4;
+
+	EXPECT_EQ(0, StrUtils::indexOf(len, strs, "str1"));
+	EXPECT_EQ(1, StrUtils::indexOf(len, strs, "str2"));
+	EXPECT_EQ(2, StrUtils::indexOf(len, strs, "str3"));
+	EXPECT_EQ(3, StrUtils::indexOf(len, strs, "str4"));
+	EXPECT_EQ(-1, StrUtils::indexOf(len, strs, "str5"));
+
+}
 
 int main(int argc, char* argv[])
 {
-
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

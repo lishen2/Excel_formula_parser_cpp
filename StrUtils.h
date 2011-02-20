@@ -13,7 +13,7 @@ class StrUtils
 		 * @param string& string to trim
 		 * @return string& trimed tring, same object of parameter
 		 */
-		static string& trim(string&);
+		static string trim(string&);
 
 		/**Find if the given string is peresented
 		 * in the given array

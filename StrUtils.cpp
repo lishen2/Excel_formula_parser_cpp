@@ -8,7 +8,7 @@
  ******************************************/
 
 // StrUtil functions
-string& StrUtils::trim(string& value)
+string StrUtils::trim(string& value)
 {
 	//trim begin
 	for(size_t i = 0; i < value.size(); ++i)
