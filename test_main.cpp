@@ -1,5 +1,12 @@
 #include "gtest/gtest.h"
 #include "StrUtils.h"
+#include "ExcelFormula.h"
+#include <iostream>
+
+using std::cout;
+using std::endl;
+using ExcelFormulaParser::ExcelFormulaToken;
+using ExcelFormulaParser::ExcelFormula;
 
 TEST(StrUtilsTest, trimFuncTest)
 {
@@ -32,6 +39,24 @@ TEST(StrUtilsTest, indexOfFuncTest)
 	EXPECT_EQ(-1, StrUtils::indexOf(len, strs, "str5"));
 
 }
+
+TEST(ParserTest, literalScanning)
+{
+	string formula1("=1+3+5");
+	ExcelFormulaParser::ExcelFormula parser1(formula1);
+	parser1.parserToToken1();
+	vector<ExcelFormulaToken> tokens = parser1.getTokens();
+	
+	for(vector<ExcelFormulaToken>::iterator it = tokens.begin();
+			it != tokens.end();
+			++it)
+	{
+		cout << it->getPrintableString();
+	}
+
+	cout << endl;
+}
+
 
 int main(int argc, char* argv[])
 {
