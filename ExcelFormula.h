@@ -18,11 +18,21 @@ namespace ExcelFormulaParser
 		public:
 			ExcelFormula(string& formula);
 
-			// used to parser formula to token
-			void parserToToken();
+			/* scan formula and translate it 
+			* into tokens literally
+			*/
+			void parserToToken1();
+
+
+			void parserToToken2();
 
 			string getFormula(){return m_formula;}
 			size_t getSize(){return m_tokens.size();}
+
+			vector<ExcelFormulaToken>& getTokens()
+			{
+				return m_tokens;
+			}
 
 		private:
 			ExcelFormula();

@@ -132,14 +132,13 @@ namespace ExcelFormulaParser
 
 
 	//ExcelFormula class implement
-	ExcelFormula::ExcelFormula(string& m_formula)
+	ExcelFormula::ExcelFormula(string& formula)
 		:m_regex(new RE("^[1-9]{1}(\\.[0-9]+)?E{1}$"))
 		{
-			m_formula = StrUtils::trim(m_formula);
-			parserToToken();
+			m_formula = StrUtils::trim(formula);
 		}
 
-	void ExcelFormula::parserToToken()
+	void ExcelFormula::parserToToken1()
 	{
 		if (m_formula.size() < 2 
 				|| m_formula[0] != '=') return;
