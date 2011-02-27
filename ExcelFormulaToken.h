@@ -55,14 +55,32 @@ namespace ExcelFormulaParser
 				m_type(type),
 				m_subtype(subtype) {} 
 
+			bool operator==(ExcelFormulaToken& token) {
+				if (token.getType() == getType()
+					&& token.getSubtype() == getSubtype()
+					&& token.getValue() == getValue())
+					return true;
+				else
+					return false;
+			}
+
 			string& getValue() {return m_value;} 
-			void setValue(string& value) {m_value = value;}
+			void setValue(string& value) {
+				m_value = value;
+				m_printableStr.clear();
+			}
 
 			ExcelFormulaTokenType getType() {return m_type;}
-			void setType(ExcelFormulaTokenType type) {m_type = type;}
+			void setType(ExcelFormulaTokenType type) {
+				m_type = type;
+				m_printableStr.clear();
+			}
 
 			ExcelFormulaTokenSubtype getSubtype() {return m_subtype;}
-			void setSubtype(ExcelFormulaTokenSubtype subtype){m_subtype = subtype; }
+			void setSubtype(ExcelFormulaTokenSubtype subtype){
+				m_subtype = subtype; 
+				m_printableStr.clear();
+			}
 
 			//! return printable string
 			string& getPrintableString()
