@@ -123,7 +123,7 @@ namespace ExcelFormulaParser
 	class ExcelFormulaStack
 	{
 		public:
-			void push(ExcelFormulaToken token)
+			void push(ExcelFormulaToken& token)
 			{
 				m_stack.push(token);
 			}
