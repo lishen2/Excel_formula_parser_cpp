@@ -105,9 +105,22 @@ TEST(ParserTest, ExcelFormulaStack)
 	ExcelFormulaToken token5(string("Coati"), ExcelFormulaToken::Argument,
 		ExcelFormulaToken::Text);
 
-	ExcelFormulaStack stack;
-	EXPECT_TRUE
+	ExcelFormulaParser::ExcelFormulaStack stack;
+	stack.push(token1);
+	stack.push(token2);
+	stack.push(token3);
+	stack.push(token4);
+	stack.push(token5);
 
+	//ExcelFormulaToken ttoken = stack.getCurrent();
+	
+	EXPECT_TRUE(stack.getCurrent() == token5);
+	EXPECT_TRUE(stack.pop() == token5);
+	EXPECT_TRUE(stack.pop() == token4);
+	EXPECT_TRUE(stack.pop() == token3);
+	EXPECT_TRUE(stack.pop() == token2);
+	EXPECT_TRUE(stack.pop() == token1);
+	EXPECT_TRUE(stack.pop() == emptyToken);
 
 }
 
