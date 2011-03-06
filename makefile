@@ -6,7 +6,8 @@ link_flags=
 include_path=-I/home/lishen/Compile/include/pcre -I/home/lishen/Compile/include
 lib_path=-L/home/lishen/Compile/lib
 libs=-lpcrecpp -lgtest -lpthread
-objects=ExcelFormula.o StrUtils.o
+objects=FormulaParser.o StrUtils.o Token.o TokenArray.o
+#objects=StrUtils.o Token.o TokenArray.o TokenStack.o
 main_objs=main.o
 test_objs=test_main.o
 
@@ -17,9 +18,12 @@ test: $(objects) $(test_objs)
 	$(CC) -o test_excel $(link_flags) $(lib_path) $(libs) $(objects) $(test_objs)
 	./test_excel
 
-$(objects) $(main_objs) $(test_objs): %.o: %.cpp 
-	$(CC) -c $(cpp_flags) $< $(include_path) 
+$(objects) $(main_objs) $(test_objs) : %.o: %.cpp 
+	$(CC) -c $(include_path) $(cpp_flags) $< 
 
+token: Token.o
+array: TokenArray.o
+stack: TokenStack.o
 
 .PHONY : clean
 clean :

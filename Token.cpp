@@ -1,25 +1,24 @@
-#include "ExcelFormulaToken.h"
+#include "Token.h"
 
-namespace ExcelFormulaParser
+namespace ExcelFormula
 {
 
-	ExcelFormulaToken::ExcelFormulaToken():
+	Token::Token():
 		m_value(),
 		m_type(Unknown),
 		m_subtype(Nothing){}
 
-	ExcelFormulaToken::ExcelFormulaToken(const char* szValue, ExcelFormulaTokenType type): 
+	Token::Token(const char* szValue, TokenType type): 
 	m_value(szValue),
 	m_type(type),
 	m_subtype(Nothing) {}
 
-
-	ExcelFormulaToken::ExcelFormulaToken(const char* szValue, ExcelFormulaTokenType type, ExcelFormulaTokenSubtype subtype):
+	Token::Token(const char* szValue, TokenType type, TokenSubtype subtype):
 		m_value(szValue),
 		m_type(type),
 		m_subtype(subtype) {} 
 
-	bool ExcelFormulaToken::operator==(ExcelFormulaToken& token) {
+	bool Token::operator==(Token& token) {
 		if (token.getType() == getType()
 				&& token.getSubtype() == getSubtype()
 				&& token.getValue() == getValue())
@@ -29,7 +28,7 @@ namespace ExcelFormulaParser
 	}
 
 	//! return printable string
-	string ExcelFormulaToken::getPrintableString()
+	const char* Token::getPrintableString()
 	{
 		string printableStr = m_value + " ";
 
@@ -105,8 +104,30 @@ namespace ExcelFormulaParser
 				printableStr += "<Union>";
 				break;
 		}//token subtype switch
-		return printableStr;
+		return printableStr.c_str();
 	} //func  getPrintableStr
+
+	Token* TokenAllocer::getToken()
+	{
+		return new Token();
+	}
+	
+	Token* TokenAllocer::getToken(const char* szValue, Token::TokenType type)
+	{
+		return new Token(szValue, type);
+	}
+
+	Token* TokenAllocer::getToken(const char* szValue, Token::TokenType type,
+			Token::TokenSubtype subtype)
+	{
+		return new Token(szValue, type, subtype);
+	}
+
+	void TokenAllocer::freeToken(Token* pToken)
+	{
+		delete pToken;
+	}
+
 }//namespace 
 
 

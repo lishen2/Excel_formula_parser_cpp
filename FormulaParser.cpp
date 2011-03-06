@@ -1,27 +1,29 @@
-#include "ExcelFormula.h"
+#include "FormulaParser.h"
+#include "TokenStack.h"
+#include "TokenArray.h"
 #include "StrUtils.h"
-#include <string> 
 #include "pcrecpp.h"
 
-using std::string;
+#define MakeToken TokenAllocer::getToken
 
-namespace ExcelFormulaParser
+namespace ExcelFormula
 {
 
 	//ExcelFormula class implement
-	ExcelFormula::ExcelFormula(string& formula)
+	FormulaParser::FormulaParser(const char* szFormula)
 		:m_regex(new RE("^[1-9]{1}(\\.[0-9]+)?E{1}$"))
 		{
-			m_formula = StrUtils::trim(formula);
+			m_formula = szFormula;
+			StrUtils::trim(m_formula);
 		}
 
-	void ExcelFormula::parserToToken1()
+	void FormulaParser::parserToToken1()
 	{
 		if (m_formula.size() < 2 
 				|| m_formula[0] != '=') return;
 
-		ExcelFormulaTokens tokens1;
-		ExcelFormulaStack stack;
+		TokenArray tokens1;
+		TokenStack stack;
 
 		const char QUOTE_DOUBLE  = '"';
 		const char QUOTE_SINGLE  = '\'';
@@ -69,7 +71,7 @@ namespace ExcelFormulaParser
 						index++;
 					} else {
 						inString = false;
-						tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand, ExcelFormulaToken::Text));
+						tokens1.add(MakeToken(value.c_str(), Token::Operand, Token::Text));
 						value = "";
 					}      
 				} else {
@@ -119,7 +121,7 @@ namespace ExcelFormulaParser
 				index++;
 				if (StrUtils::indexOf(ERRORS_LEN, ERRORS, value.c_str()) != -1) {
 					inError = false;
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand, ExcelFormulaToken::Error));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand, Token::Error));
 					value = "";
 				}
 				continue;
@@ -143,7 +145,7 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == QUOTE_DOUBLE) {  
 				if (value.size() > 0) {  // unexpected
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Unknown));
+					tokens1.add(MakeToken(value.c_str(), Token::Unknown));
 					value = "";
 				}
 				inString = true;
@@ -153,7 +155,7 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == QUOTE_SINGLE) {
 				if (value.size() > 0) { // unexpected
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Unknown));
+					tokens1.add(MakeToken(value.c_str(), Token::Unknown));
 					value = "";
 				}
 				inPath = true;
@@ -170,7 +172,7 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == ERROR_START) {
 				if (value.size() > 0) { // unexpected
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Unknown));
+					tokens1.add(MakeToken(value.c_str(), Token::Unknown));
 					value = "";
 				}
 				inError = true;
@@ -183,30 +185,30 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == BRACE_OPEN) {  
 				if (value.size() > 0) { // unexpected
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Unknown));
+					tokens1.add(MakeToken(value.c_str(), Token::Unknown));
 					value = "";
 				}
-				stack.push(tokens1.add(ExcelFormulaToken("ARRAY", ExcelFormulaToken::Function, ExcelFormulaToken::Start)));
-				stack.push(tokens1.add(ExcelFormulaToken("ARRAYROW", ExcelFormulaToken::Function, ExcelFormulaToken::Start)));
+				stack.push(tokens1.add(MakeToken("ARRAY", Token::Function, Token::Start)));
+				stack.push(tokens1.add(MakeToken("ARRAYROW", Token::Function, Token::Start)));
 				index++;
 				continue;
 			}
 
 			if (m_formula[index] == SEMICOLON) {  
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(Token(value, Token::Operand));
 					value = "";
 				}
 				tokens1.add(stack.pop());
-				tokens1.add(ExcelFormulaToken(",", ExcelFormulaToken::Argument));
-				stack.push(tokens1.add(ExcelFormulaToken("ARRAYROW", ExcelFormulaToken::Function, ExcelFormulaToken::Start)));
+				tokens1.add(MakeToken(",", Token::Argument));
+				stack.push(tokens1.add(MakeToken("ARRAYROW", Token::Function, Token::Start)));
 				index++;
 				continue;
 			}
 
 			if (m_formula[index] == BRACE_CLOSE) {  
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
 				tokens1.add(stack.pop());
@@ -219,10 +221,10 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == WHITESPACE) {
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
-				tokens1.add(ExcelFormulaToken("", ExcelFormulaToken::Whitespace));
+				tokens1.add(Token("", Token::Whitespace));
 				index++;
 				while ((m_formula[index] == WHITESPACE) && (index < m_formula.size())) { 
 					index++;
@@ -235,10 +237,10 @@ namespace ExcelFormulaParser
 			if ((index + 2) <= m_formula.size()) {
 				if (StrUtils::indexOf(COMPARATORS_MULTI_LEN, COMPARATORS_MULTI, m_formula.substr(index, 2).c_str()) != -1) {
 					if (value.size() > 0) {
-						tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+						tokens1.add(MakeToken(value.c_str(), Token::Operand));
 						value = "";
 					}
-					tokens1.add(ExcelFormulaToken(m_formula.substr(index, 2).c_str(), ExcelFormulaToken::OperatorInfix, ExcelFormulaToken::Logical));
+					tokens1.add(MakeToken(m_formula.substr(index, 2).c_str(), Token::OperatorInfix, Token::Logical));
 					index += 2;
 					continue;     
 				}
@@ -248,10 +250,12 @@ namespace ExcelFormulaParser
 
 			if ((OPERATORS_INFIX).find_first_of(m_formula[index]) != string::npos) {
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
-				tokens1.add(ExcelFormulaToken(string(&(m_formula[index])), ExcelFormulaToken::OperatorInfix));
+				char buf[2] = {0};
+				buf[0] = m_formula[index];
+				tokens1.add(MakeToken(buf, Token::OperatorInfix));
 				index++;
 				continue;     
 			}
@@ -261,10 +265,10 @@ namespace ExcelFormulaParser
 			static string operatorsProtfixStr(OPERATORS_POSTFIX);
 			if (operatorsProtfixStr.find_first_of(m_formula[index]) != string::npos) {
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(Token(value, Token::Operand));
 					value = "";
 				}
-				tokens1.add(ExcelFormulaToken(string(&(m_formula[index])), ExcelFormulaToken::OperatorPostfix));
+				tokens1.add(Token(string(&(m_formula[index])), Token::OperatorPostfix));
 				index++;
 				continue;     
 			}
@@ -273,10 +277,10 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == PAREN_OPEN) {
 				if (value.size() > 0) {
-					stack.push(tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Function, ExcelFormulaToken::Start)));
+					stack.push(tokens1.add(Token(value, Token::Function, Token::Start)));
 					value = "";
 				} else {
-					stack.push(tokens1.add(ExcelFormulaToken("", ExcelFormulaToken::Subexpression, ExcelFormulaToken::Start)));
+					stack.push(tokens1.add(Token("", Token::Subexpression, Token::Start)));
 				}
 				index++;
 				continue;
@@ -286,13 +290,13 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == COMMA) {
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(Token(value, Token::Operand));
 					value = "";
 				}
-				if (stack.getCurrent().getType() != ExcelFormulaToken::Function) {
-					tokens1.add(ExcelFormulaToken(",", ExcelFormulaToken::OperatorInfix, ExcelFormulaToken::Union));
+				if (stack.getCurrent().getType() != Token::Function) {
+					tokens1.add(Token(",", Token::OperatorInfix, Token::Union));
 				} else {
-					tokens1.add(ExcelFormulaToken(",", ExcelFormulaToken::Argument));
+					tokens1.add(Token(",", Token::Argument));
 				}
 				index++;
 				continue;
@@ -302,7 +306,7 @@ namespace ExcelFormulaParser
 
 			if (m_formula[index] == PAREN_CLOSE) {
 				if (value.size() > 0) {
-					tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+					tokens1.add(Token(value, Token::Operand));
 					value = "";
 				}
 				tokens1.add(stack.pop());
@@ -320,7 +324,7 @@ namespace ExcelFormulaParser
 		// dump remaining accumulation
 
 		if (value.size() > 0) {
-			tokens1.add(ExcelFormulaToken(value, ExcelFormulaToken::Operand));
+			tokens1.add(Token(value, Token::Operand));
 		}
 
 
