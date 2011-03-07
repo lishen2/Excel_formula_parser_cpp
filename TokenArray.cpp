@@ -55,6 +55,11 @@ namespace ExcelFormula{
 		return true;
 	}
 
+	void TokenArray::toVector(vector<Token*>& vecToken)
+	{
+		vecToken = m_tokens;
+	}
+
 }
 
 

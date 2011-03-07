@@ -14,6 +14,8 @@ namespace ExcelFormula{
 		public:
 			TokenArray();
 
+			void toVector(vector<Token*>&);
+
 			size_t size() {return m_tokens.size();}
 
 			bool isBOF() {return (m_index <= 0)?true:false;}

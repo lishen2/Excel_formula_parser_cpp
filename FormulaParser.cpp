@@ -196,7 +196,7 @@ namespace ExcelFormula
 
 			if (m_formula[index] == SEMICOLON) {  
 				if (value.size() > 0) {
-					tokens1.add(Token(value, Token::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
 				tokens1.add(stack.pop());
@@ -224,7 +224,7 @@ namespace ExcelFormula
 					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
-				tokens1.add(Token("", Token::Whitespace));
+				tokens1.add(MakeToken("", Token::Whitespace));
 				index++;
 				while ((m_formula[index] == WHITESPACE) && (index < m_formula.size())) { 
 					index++;
@@ -265,10 +265,12 @@ namespace ExcelFormula
 			static string operatorsProtfixStr(OPERATORS_POSTFIX);
 			if (operatorsProtfixStr.find_first_of(m_formula[index]) != string::npos) {
 				if (value.size() > 0) {
-					tokens1.add(Token(value, Token::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
-				tokens1.add(Token(string(&(m_formula[index])), Token::OperatorPostfix));
+				char buf[2] = {0};
+				buf[0] = m_formula[index];
+				tokens1.add(MakeToken(buf, Token::OperatorPostfix));
 				index++;
 				continue;     
 			}
@@ -277,10 +279,10 @@ namespace ExcelFormula
 
 			if (m_formula[index] == PAREN_OPEN) {
 				if (value.size() > 0) {
-					stack.push(tokens1.add(Token(value, Token::Function, Token::Start)));
+					stack.push(tokens1.add(MakeToken(value.c_str(), Token::Function, Token::Start)));
 					value = "";
 				} else {
-					stack.push(tokens1.add(Token("", Token::Subexpression, Token::Start)));
+					stack.push(tokens1.add(MakeToken("", Token::Subexpression, Token::Start)));
 				}
 				index++;
 				continue;
@@ -290,13 +292,13 @@ namespace ExcelFormula
 
 			if (m_formula[index] == COMMA) {
 				if (value.size() > 0) {
-					tokens1.add(Token(value, Token::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
-				if (stack.getCurrent().getType() != Token::Function) {
-					tokens1.add(Token(",", Token::OperatorInfix, Token::Union));
+				if (stack.getCurrent()->getType() != Token::Function) {
+					tokens1.add(MakeToken(",", Token::OperatorInfix, Token::Union));
 				} else {
-					tokens1.add(Token(",", Token::Argument));
+					tokens1.add(MakeToken(",", Token::Argument));
 				}
 				index++;
 				continue;
@@ -306,7 +308,7 @@ namespace ExcelFormula
 
 			if (m_formula[index] == PAREN_CLOSE) {
 				if (value.size() > 0) {
-					tokens1.add(Token(value, Token::Operand));
+					tokens1.add(MakeToken(value.c_str(), Token::Operand));
 					value = "";
 				}
 				tokens1.add(stack.pop());
@@ -324,9 +326,19 @@ namespace ExcelFormula
 		// dump remaining accumulation
 
 		if (value.size() > 0) {
-			tokens1.add(Token(value, Token::Operand));
+			tokens1.add(MakeToken(value.c_str(), Token::Operand));
 		}
 
+		//! assign the temporary token array to member variable
+		/*tokens1.Reset();
+		while(!tokens1.isEOF())
+		{
+			m_tokens.push_back(tokens1.getCurrent());
+			tokens1.moveNext();
+		}
+		*/
+
+		tokens1.toVector(m_tokens);
 
 	}//function 
 
