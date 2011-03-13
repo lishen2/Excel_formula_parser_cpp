@@ -15,6 +15,7 @@ namespace ExcelFormula{
 			TokenArray();
 
 			void toVector(vector<Token*>&);
+			void fromVector(vector<Token*>&);
 
 			size_t size() {return m_tokens.size();}
 

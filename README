@@ -2,4 +2,4 @@ Cpp port of ewbi's Excel formula parser. Original post is: http://ewbi.blogs.com
 
 This cpp port use PCRE as it's regular expression engine, the gtest as it's test framework.
 
-Completeness: 20%
+Completeness: 50%
