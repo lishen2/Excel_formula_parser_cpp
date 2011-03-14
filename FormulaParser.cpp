@@ -333,133 +333,135 @@ namespace ExcelFormula
 
 	void FormulaParser::parserToToken2()
 	{
-      // move tokenList to new set, excluding unnecessary white-space tokens and converting necessary ones to intersections
+      // move tokenList to new set, excluding unnecessary white-space m_tmpAry and converting necessary ones to intersections
 
-      ExcelFormulaTokens tokens2 = new ExcelFormulaTokens(tokens1.Count);
+      TokenArray tmpAry2;
       
-      while (tokens1.MoveNext()) {
+      while (m_tmpAry.moveNext()) {
       
-        ExcelFormulaToken token = tokens1.Current;
+        Token* pToken = m_tmpAry.getCurrent();
         
-        if (token == null) continue;
+        if (pToken == NULL) continue;
         
-        if (token.Type != ExcelFormulaTokenType.Whitespace) {
-          tokens2.Add(token);
+        if (pToken->getType() != Token::Whitespace) {
+          tmpAry2.add(pToken);
           continue;        
         }
 
-        if ((tokens1.BOF) || (tokens1.EOF)) continue;
+        if (m_tmpAry.isBOF() || m_tmpAry.isEOF()) continue;
         
-        ExcelFormulaToken previous = tokens1.Previous;
+        Token* previous = m_tmpAry.getPrevious();
 
-        if (previous == null) continue;
+        if (previous == NULL) continue;
         
         if (!(
-              ((previous.Type == ExcelFormulaTokenType.Function) && (previous.Subtype == ExcelFormulaTokenSubtype.Stop)) || 
-              ((previous.Type == ExcelFormulaTokenType.Subexpression) && (previous.Subtype == ExcelFormulaTokenSubtype.Stop)) || 
-              (previous.Type == ExcelFormulaTokenType.Operand)
+              ((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
+              ((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
+              (previous->getType() == Token::Operand)
               )
             ) continue;
             
-        ExcelFormulaToken next = tokens1.Next;
+        Token* next = m_tmpAry.getNext();
         
-        if (next == null) continue;
+        if (next == NULL) continue;
               
         if (!(
-              ((next.Type == ExcelFormulaTokenType.Function) && (next.Subtype == ExcelFormulaTokenSubtype.Start)) || 
-              ((next.Type == ExcelFormulaTokenType.Subexpression) && (next.Subtype == ExcelFormulaTokenSubtype.Start)) ||
-              (next.Type == ExcelFormulaTokenType.Operand)
+              ((next->getType() == Token::Function) && (next->getSubtype() == Token::Start)) || 
+              ((next->getType() == Token::Subexpression) && (next->getSubtype() == Token::Start)) ||
+              (next->getType() == Token::Operand)
               )
             ) continue;
                     
-        tokens2.Add(new ExcelFormulaToken("", ExcelFormulaTokenType.OperatorInfix, ExcelFormulaTokenSubtype.Intersection));
+        tmpAry2.add(MakeToken("", Token::OperatorInfix, Token::Intersection));
         
       }
       
-      // move tokens to final list, switching infix "-" operators to prefix when appropriate, switching infix "+" operators 
+      // move m_tmpAry to final list, switching infix "-" operators to prefix when appropriate, switching infix "+" operators 
       // to noop when appropriate, identifying operand and infix-operator subtypes, and pulling "@" from function names
       
-      tokens = new List<ExcelFormulaToken>(tokens2.Count);
+      //m_tmpAry = new List<Token>(tmpAry2.Count);
+	  TokenArray tmpAry3;
       
-      while (tokens2.MoveNext()) {
+      while (tmpAry2.moveNext()) {
 
-        ExcelFormulaToken token = tokens2.Current;
+        Token* pToken = tmpAry2.getCurrent();
         
-        if (token == null) continue;
+        if (pToken == NULL) continue;
 
-        ExcelFormulaToken previous = tokens2.Previous;
-        ExcelFormulaToken next = tokens2.Next;
+        Token* previous = tmpAry2.getPrevious();
+        Token* next = tmpAry2.getNext();
         
-        if ((token.Type == ExcelFormulaTokenType.OperatorInfix) && (token.Value == "-")) {
-          if (tokens2.BOF)
-            token.Type = ExcelFormulaTokenType.OperatorPrefix;
+        if ((pToken->getType() == Token::OperatorInfix) && (pToken->getStrValue().compare("-") == 0)) {
+          if (tmpAry2.isBOF())
+            pToken->setType(Token::OperatorPrefix);
           else if (
-                  ((previous.Type == ExcelFormulaTokenType.Function) && (previous.Subtype == ExcelFormulaTokenSubtype.Stop)) || 
-                  ((previous.Type == ExcelFormulaTokenType.Subexpression) && (previous.Subtype == ExcelFormulaTokenSubtype.Stop)) || 
-                  (previous.Type == ExcelFormulaTokenType.OperatorPostfix) || 
-                  (previous.Type == ExcelFormulaTokenType.Operand)
+                  ((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
+                  ((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
+                  (previous->getType() == Token::OperatorPostfix) || 
+                  (previous->getType() == Token::Operand)
                   )
-            token.Subtype = ExcelFormulaTokenSubtype.Math;
+            pToken->setSubtype(Token::Math);
           else
-            token.Type = ExcelFormulaTokenType.OperatorPrefix;
+            pToken->setType(Token::OperatorPrefix);
             
-          tokens.Add(token);
+          m_tmpAry.add(pToken);
           continue;          
         }
 
-        if ((token.Type == ExcelFormulaTokenType.OperatorInfix) && (token.Value == "+")) {
-          if (tokens2.BOF)
+        if ((pToken->getType() == Token::OperatorInfix) && (pToken->getStrValue().compare("+") == 0)) {
+          if (tmpAry2.isBOF())
             continue;
           else if (
-                  ((previous.Type == ExcelFormulaTokenType.Function) && (previous.Subtype == ExcelFormulaTokenSubtype.Stop)) || 
-                  ((previous.Type == ExcelFormulaTokenType.Subexpression) && (previous.Subtype == ExcelFormulaTokenSubtype.Stop)) || 
-                  (previous.Type == ExcelFormulaTokenType.OperatorPostfix) || 
-                  (previous.Type == ExcelFormulaTokenType.Operand)
+                  ((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
+                  ((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
+                  (previous->getType() == Token::OperatorPostfix) || 
+                  (previous->getType() == Token::Operand)
                   )
-            token.Subtype = ExcelFormulaTokenSubtype.Math;
+            pToken->setSubtype(Token::Math);
           else
             continue;
             
-          tokens.Add(token);
+          m_tmpAry.add(pToken);
           continue;          
         }
 
-        if ((token.Type == ExcelFormulaTokenType.OperatorInfix) && (token.Subtype == ExcelFormulaTokenSubtype.Nothing)) {
-          if (("<>=").IndexOf(token.Value.Substring(0, 1)) != -1) 
-            token.Subtype = ExcelFormulaTokenSubtype.Logical;
-          else if (token.Value == "&")
-            token.Subtype = ExcelFormulaTokenSubtype.Concatenation;
+        if ((pToken->getType() == Token::OperatorInfix) && (pToken->getSubtype() == Token::Nothing)) {
+			static string marks("<>=");
+          if (marks.find_first_of(*(pToken->getValue())) != string::npos) 
+            pToken->setSubtype(Token::Logical);
+          else if (pToken->getStrValue().compare("&") == 0)
+            pToken->setSubtype(Token::Concatenation);
           else
-            token.Subtype = ExcelFormulaTokenSubtype.Math;
+            pToken->setSubtype(Token::Math);
 
-          tokens.Add(token);
+          m_tmpAry.add(pToken);
           continue;
         }
 
-        if ((token.Type == ExcelFormulaTokenType.Operand) && (token.Subtype == ExcelFormulaTokenSubtype.Nothing)) {
-          double d;
-          bool isNumber = double.TryParse(token.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
+        if ((pToken->getType() == Token::Operand) && (pToken->getSubtype() == Token::Nothing)) {
+/*          double d;
+          bool isNumber = double.TryParse(pToken.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
           if (!isNumber)
             if ((token.Value == "TRUE") || (token.Value == "FALSE")) 
-              token.Subtype = ExcelFormulaTokenSubtype.Logical;
+              token.Subtype = Token::Logical;
             else 
-              token.Subtype = ExcelFormulaTokenSubtype.Range;            
+              token.Subtype = Token::Range;            
           else
-            token.Subtype = ExcelFormulaTokenSubtype.Number;          
+            token.Subtype = Token::Number;          
 
-          tokens.Add(token);
-          continue;
+          m_tmpAry.Add(token);
+          continue;*/
         }
 
-        if (token.Type == ExcelFormulaTokenType.Function) {
-          if (token.Value.Length > 0) {
-            if (token.Value.Substring(0, 1) == "@") {
-              token.Value = token.Value.Substring(1);
+        if (pToken->getType() == Token::Function) {
+          if (pToken->getStrValue().size() > 0) {
+            if (*(pToken->getValue()) == '@') {
+              pToken->setValue(pToken->getStrValue().substr(1).c_str());
             }
           }
         }
       
-        tokens.Add(token);
+        m_tmpAry.add(pToken);
         
       }//while
 	

@@ -1,4 +1,5 @@
 #include "TokenStack.h"
+#include "Token.h"
 
 namespace ExcelFormula
 {
@@ -15,16 +16,17 @@ namespace ExcelFormula
 		}
 		else
 		{
-			/*
-			Token efToken = m_stack.top();
-			string emptyStr;
-			efToken.setValue(emptyStr);
-			efToken.setSubtype(Token::Stop);
+			
+			Token* efToken = m_stack.top();
+			m_stack.pop();
+			efToken->setSubtype(Token::Stop);
 			return efToken;
-			*/
+			
+			/*
 			Token* topElement = m_stack.top();
 			m_stack.pop();
 			return topElement ;
+			*/
 		}
 	}
 

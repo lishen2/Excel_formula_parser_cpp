@@ -62,6 +62,8 @@ namespace ExcelFormula
 
 			//! retrieve the token value
 			const char* getValue() {return m_value.c_str();} 
+			const string& getStrValue() {return m_value;}
+
 			//! set the token value
 			void setValue(const char* value) {
 				m_value = value;
