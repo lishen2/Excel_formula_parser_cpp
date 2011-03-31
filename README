@@ -1,5 +1,5 @@
 Cpp port of ewbi's Excel formula parser. Original post is: http://ewbi.blogs.com/develops/2004/12/excel_formula_p.html
 
-This cpp port use PCRE as it's regular expression engine, the gtest as it's test framework.
+This cpp port use PCRE as it's regular expression engine, so you must use PCRE inoder to compile it.
 
-Completeness: 50%
+Completeness: 100%

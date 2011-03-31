@@ -8,17 +8,36 @@ using std::string;
 using ExcelFormula::Token;
 using ExcelFormula::FormulaParser;
 
+void printIntend(int i)
+{
+	for(int j = 0; j < i; ++j)
+	{
+		cout << "|";
+	}
+}
+
+
 void printParser(FormulaParser& parser)
 {
 	vector<Token*> tokens = parser.getTokens();
 	cout << "Formual:" << parser.getFormula() << endl;
 	cout << "Tokens:" << endl;
 	
+	int intend = 0;
 	for(vector<Token*>::iterator it = tokens.begin();
 			it != tokens.end();
 			++it)
 	{
+		if((*it)->getSubtype() == Token::Start)
+		{
+			++intend;
+		}
+		printIntend(intend);
 		cout << (*it)->getPrintableString() << endl;
+		if((*it)->getSubtype() == Token::Stop)
+		{
+			--intend;
+		}
 	}
 
 	cout << endl;
@@ -39,8 +58,6 @@ int main(int argc, char* argv[])
 	parser2.parserToToken1();
 	parser2.parserToToken2();
 	printParser(parser2);
-
-
 
 	return 0;
 }
