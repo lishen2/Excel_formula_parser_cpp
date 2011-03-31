@@ -3,8 +3,10 @@
 #include "TokenArray.h"
 #include "StrUtils.h"
 #include "pcrecpp.h"
+#include <sstream>
 
 #define MakeToken TokenAllocer::getToken
+using std::stringstream;
 
 namespace ExcelFormula
 {
@@ -437,18 +439,22 @@ namespace ExcelFormula
 			}
 
 			if ((pToken->getType() == Token::Operand) && (pToken->getSubtype() == Token::Nothing)) {
-				/*          double d;
-							bool isNumber = double.TryParse(pToken.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
-							if (!isNumber)
-							if ((token.Value == "TRUE") || (token.Value == "FALSE")) 
-							token.Subtype = Token::Logical;
-							else 
-							token.Subtype = Token::Range;            
-							else
-							token.Subtype = Token::Number;          
+				double d;
+				//bool isNumber = double.TryParse(pToken.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
+				stringstream doubleConv;
+				doubleConv << pToken->getValue();
+				doubleConv >> d;
 
-							m_tmpAry.Add(token);
-							continue;*/
+				if (doubleConv.fail())
+					if ((pToken->getStrValue().compare("TRUE") == 0) || (pToken->getStrValue().compare("FALSE") == 0)) 
+						pToken->setSubtype(Token::Logical);
+					else 
+						pToken->setSubtype(Token::Range);            
+				else
+					pToken->setSubtype(Token::Number);          
+
+				m_tmpAry.add(pToken);
+				continue;
 			}
 
 			if (pToken->getType() == Token::Function) {
