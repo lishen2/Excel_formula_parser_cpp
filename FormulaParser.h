@@ -24,8 +24,8 @@ namespace ExcelFormula
 			FormulaParser(const char* szFormula);
 
 			/** scan formula and translate it 
-			* into tokens literally
-			*/
+			 * into tokens literally
+			 */
 			void parserToToken1();
 
 			/**
@@ -37,7 +37,7 @@ namespace ExcelFormula
 			 * @param TokenArray* the final token array
 			 */
 			void parserToToken2();
-			
+
 			const char* getFormula(){return m_formula.c_str();}
 
 			size_t getSize(){return m_tokens.size();}
@@ -57,7 +57,7 @@ namespace ExcelFormula
 			FormulaParser();
 
 			string m_formula;
-			
+
 			vector<Token*> m_tokens;
 
 			TokenArray m_tmpAry;
@@ -65,7 +65,7 @@ namespace ExcelFormula
 			TokenStack m_tmpStack;
 
 			RE* m_regex;
-	
+
 	}; //class ExcelFormula
 
 

@@ -17,7 +17,7 @@ namespace ExcelFormula
 		else
 		{
 			
-			Token* efToken = m_stack.top();
+			Token* efToken = m_stack.top()->clone();
 			m_stack.pop();
 			efToken->setSubtype(Token::Stop);
 			return efToken;

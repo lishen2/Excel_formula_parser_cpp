@@ -21,7 +21,7 @@ namespace ExcelFormula
 	bool Token::operator==(Token& token) {
 		if (token.getType() == getType()
 				&& token.getSubtype() == getSubtype()
-				&& token.getValue() == getValue())
+				&& token.getStrValue().compare(getStrValue()) == 0)
 			return true;
 		else
 			return false;
@@ -106,6 +106,11 @@ namespace ExcelFormula
 		}//token subtype switch
 		return printableStr.c_str();
 	} //func  getPrintableStr
+
+	Token* Token::clone()
+	{
+		return TokenAllocer::getToken(getValue(), getType(), getSubtype());
+	}
 
 	Token* TokenAllocer::getToken()
 	{

@@ -33,7 +33,9 @@ namespace ExcelFormula{
 
 			bool moveNext();
 
-			void Reset(){m_index = 0;}
+			void reset(){m_index = 0;}
+
+			void releaseAll();
 
 		private:
 			size_t m_index;

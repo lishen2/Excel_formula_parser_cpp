@@ -81,6 +81,9 @@ namespace ExcelFormula
 
 			//! get printable token string
 			const char* getPrintableString();
+
+			//! duplicate a another token
+			Token* clone();
 		private:
 
 			string m_value;

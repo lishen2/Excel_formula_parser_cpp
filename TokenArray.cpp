@@ -1,4 +1,5 @@
 #include "TokenArray.h"
+#include "Token.h"
 
 namespace ExcelFormula{
 
@@ -8,7 +9,7 @@ namespace ExcelFormula{
 
 	Token* TokenArray::getCurrent()
 	{
-		if (m_index >= m_tokens.size())
+		if (m_index >= m_tokens.size() || m_index < 0)
 		{
 			return NULL;
 		}
@@ -65,6 +66,16 @@ namespace ExcelFormula{
 		m_tokens = vecToken;
 	}
 
+	void TokenArray::releaseAll()
+	{
+		for(vector<Token*>::const_iterator it = m_tokens.begin();
+				it != m_tokens.end();
+				++it)
+		{
+			delete (*it);
+		}
+		m_tokens.clear();
+	}
 }
 
 

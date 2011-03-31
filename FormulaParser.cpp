@@ -333,138 +333,136 @@ namespace ExcelFormula
 
 	void FormulaParser::parserToToken2()
 	{
-      // move tokenList to new set, excluding unnecessary white-space m_tmpAry and converting necessary ones to intersections
+		// move tokenList to new set, excluding unnecessary white-space m_tmpAry and converting necessary ones to intersections
 
-      TokenArray tmpAry2;
-      
-      while (m_tmpAry.moveNext()) {
-      
-        Token* pToken = m_tmpAry.getCurrent();
-        
-        if (pToken == NULL) continue;
-        
-        if (pToken->getType() != Token::Whitespace) {
-          tmpAry2.add(pToken);
-          continue;        
-        }
+		TokenArray tmpAry2;
+		m_tmpAry.reset();
+		for(Token* pToken = m_tmpAry.getCurrent();
+				!m_tmpAry.isEOF(); 
+				m_tmpAry.moveNext(),pToken = m_tmpAry.getCurrent())
+		{
+			if (pToken == NULL) continue;
 
-        if (m_tmpAry.isBOF() || m_tmpAry.isEOF()) continue;
-        
-        Token* previous = m_tmpAry.getPrevious();
+			if (pToken->getType() != Token::Whitespace) {
+				tmpAry2.add(pToken->clone());
+				continue;        
+			}
 
-        if (previous == NULL) continue;
-        
-        if (!(
-              ((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
-              ((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
-              (previous->getType() == Token::Operand)
-              )
-            ) continue;
-            
-        Token* next = m_tmpAry.getNext();
-        
-        if (next == NULL) continue;
-              
-        if (!(
-              ((next->getType() == Token::Function) && (next->getSubtype() == Token::Start)) || 
-              ((next->getType() == Token::Subexpression) && (next->getSubtype() == Token::Start)) ||
-              (next->getType() == Token::Operand)
-              )
-            ) continue;
-                    
-        tmpAry2.add(MakeToken("", Token::OperatorInfix, Token::Intersection));
-        
-      }
-      
-      // move m_tmpAry to final list, switching infix "-" operators to prefix when appropriate, switching infix "+" operators 
-      // to noop when appropriate, identifying operand and infix-operator subtypes, and pulling "@" from function names
-      
-      //m_tmpAry = new List<Token>(tmpAry2.Count);
-	  TokenArray tmpAry3;
-      
-      while (tmpAry2.moveNext()) {
+			if (m_tmpAry.isBOF() || m_tmpAry.isEOF()) continue;
 
-        Token* pToken = tmpAry2.getCurrent();
-        
-        if (pToken == NULL) continue;
+			Token* previous = m_tmpAry.getPrevious();
 
-        Token* previous = tmpAry2.getPrevious();
-        Token* next = tmpAry2.getNext();
-        
-        if ((pToken->getType() == Token::OperatorInfix) && (pToken->getStrValue().compare("-") == 0)) {
-          if (tmpAry2.isBOF())
-            pToken->setType(Token::OperatorPrefix);
-          else if (
-                  ((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
-                  ((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
-                  (previous->getType() == Token::OperatorPostfix) || 
-                  (previous->getType() == Token::Operand)
-                  )
-            pToken->setSubtype(Token::Math);
-          else
-            pToken->setType(Token::OperatorPrefix);
-            
-          m_tmpAry.add(pToken);
-          continue;          
-        }
+			if (previous == NULL) continue;
 
-        if ((pToken->getType() == Token::OperatorInfix) && (pToken->getStrValue().compare("+") == 0)) {
-          if (tmpAry2.isBOF())
-            continue;
-          else if (
-                  ((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
-                  ((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
-                  (previous->getType() == Token::OperatorPostfix) || 
-                  (previous->getType() == Token::Operand)
-                  )
-            pToken->setSubtype(Token::Math);
-          else
-            continue;
-            
-          m_tmpAry.add(pToken);
-          continue;          
-        }
+			if (!(
+						((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
+						((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
+						(previous->getType() == Token::Operand)
+				 )
+			   ) continue;
 
-        if ((pToken->getType() == Token::OperatorInfix) && (pToken->getSubtype() == Token::Nothing)) {
-			static string marks("<>=");
-          if (marks.find_first_of(*(pToken->getValue())) != string::npos) 
-            pToken->setSubtype(Token::Logical);
-          else if (pToken->getStrValue().compare("&") == 0)
-            pToken->setSubtype(Token::Concatenation);
-          else
-            pToken->setSubtype(Token::Math);
+			Token* next = m_tmpAry.getNext();
 
-          m_tmpAry.add(pToken);
-          continue;
-        }
+			if (next == NULL) continue;
 
-        if ((pToken->getType() == Token::Operand) && (pToken->getSubtype() == Token::Nothing)) {
-/*          double d;
-          bool isNumber = double.TryParse(pToken.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
-          if (!isNumber)
-            if ((token.Value == "TRUE") || (token.Value == "FALSE")) 
-              token.Subtype = Token::Logical;
-            else 
-              token.Subtype = Token::Range;            
-          else
-            token.Subtype = Token::Number;          
+			if (!(
+						((next->getType() == Token::Function) && (next->getSubtype() == Token::Start)) || 
+						((next->getType() == Token::Subexpression) && (next->getSubtype() == Token::Start)) ||
+						(next->getType() == Token::Operand)
+				 )
+			   ) continue;
 
-          m_tmpAry.Add(token);
-          continue;*/
-        }
+			tmpAry2.add(MakeToken("", Token::OperatorInfix, Token::Intersection));
+		}
 
-        if (pToken->getType() == Token::Function) {
-          if (pToken->getStrValue().size() > 0) {
-            if (*(pToken->getValue()) == '@') {
-              pToken->setValue(pToken->getStrValue().substr(1).c_str());
-            }
-          }
-        }
-      
-        m_tmpAry.add(pToken);
-        
-      }//while
-	
+		// move m_tmpAry to final list, switching infix "-" operators to prefix when appropriate, switching infix "+" operators 
+		// to noop when appropriate, identifying operand and infix-operator subtypes, and pulling "@" from function names
+
+		m_tmpAry.releaseAll();
+		tmpAry2.reset();
+		for(Token* pToken = tmpAry2.getCurrent();
+				!tmpAry2.isEOF();
+				tmpAry2.moveNext(), pToken = tmpAry2.getCurrent())
+		{
+			if (pToken == NULL) continue;
+
+			Token* previous = tmpAry2.getPrevious();
+			Token* next = tmpAry2.getNext();
+
+			if ((pToken->getType() == Token::OperatorInfix) && (pToken->getStrValue().compare("-") == 0)) {
+				if (tmpAry2.isBOF())
+					pToken->setType(Token::OperatorPrefix);
+				else if (
+						((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
+						((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
+						(previous->getType() == Token::OperatorPostfix) || 
+						(previous->getType() == Token::Operand)
+						)
+					pToken->setSubtype(Token::Math);
+				else
+					pToken->setType(Token::OperatorPrefix);
+
+				m_tmpAry.add(pToken);
+				continue;          
+			}
+
+			if ((pToken->getType() == Token::OperatorInfix) && (pToken->getStrValue().compare("+") == 0)) {
+				if (tmpAry2.isBOF())
+					continue;
+				else if (
+						((previous->getType() == Token::Function) && (previous->getSubtype() == Token::Stop)) || 
+						((previous->getType() == Token::Subexpression) && (previous->getSubtype() == Token::Stop)) || 
+						(previous->getType() == Token::OperatorPostfix) || 
+						(previous->getType() == Token::Operand)
+						)
+					pToken->setSubtype(Token::Math);
+				else
+					continue;
+
+				m_tmpAry.add(pToken);
+				continue;          
+			}
+
+			if ((pToken->getType() == Token::OperatorInfix) && (pToken->getSubtype() == Token::Nothing)) {
+				static string marks("<>=");
+				if (marks.find_first_of(*(pToken->getValue())) != string::npos) 
+					pToken->setSubtype(Token::Logical);
+				else if (pToken->getStrValue().compare("&") == 0)
+					pToken->setSubtype(Token::Concatenation);
+				else
+					pToken->setSubtype(Token::Math);
+
+				m_tmpAry.add(pToken);
+				continue;
+			}
+
+			if ((pToken->getType() == Token::Operand) && (pToken->getSubtype() == Token::Nothing)) {
+				/*          double d;
+							bool isNumber = double.TryParse(pToken.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
+							if (!isNumber)
+							if ((token.Value == "TRUE") || (token.Value == "FALSE")) 
+							token.Subtype = Token::Logical;
+							else 
+							token.Subtype = Token::Range;            
+							else
+							token.Subtype = Token::Number;          
+
+							m_tmpAry.Add(token);
+							continue;*/
+			}
+
+			if (pToken->getType() == Token::Function) {
+				if (pToken->getStrValue().size() > 0) {
+					if (*(pToken->getValue()) == '@') {
+						pToken->setValue(pToken->getStrValue().substr(1).c_str());
+					}
+				}
+			}
+
+			m_tmpAry.add(pToken);
+		}//while
+
+		m_tmpAry.toVector(m_tokens);
 	}
 
 	void FormulaParser::clear()
