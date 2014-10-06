@@ -20,7 +20,7 @@ void printIntend(int i)
 void printParser(FormulaParser& parser)
 {
 	vector<Token*> tokens = parser.getTokens();
-	cout << "Formual:" << parser.getFormula() << endl;
+	cout << "Formula:" << parser.getFormula() << endl;
 	cout << "Tokens:" << endl;
 	
 	int intend = 0;
