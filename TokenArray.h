@@ -2,6 +2,7 @@
 #define _EXCELFORMUAL_TOKEN_ARRAY_H__
 
 #include <vector>
+#include <cstddef>
 
 using std::vector;
 
