@@ -10,7 +10,7 @@ objects=FormulaParser.o StrUtils.o Token.o TokenArray.o TokenStack.o
 main_objs=main.o
 
 excel : $(objects) $(main_objs)
-	$(CC) -o excel $(link_flags) $(lib_path) $(libs) $(objects) $(main_objs)
+	$(CC) -o excel $(link_flags) $(main_objs) $(objects) $(lib_path) $(libs)
 
 $(objects) $(main_objs) : %.o: %.cpp 
 	$(CC) -c $(include_path) $(cpp_flags) $< 
