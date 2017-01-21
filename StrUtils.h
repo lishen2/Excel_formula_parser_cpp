@@ -24,6 +24,8 @@ class StrUtils
 		static int indexOf(vector<string>&, string&);
 		static int indexOf(const int, const char*[], const char*);
 
+    static bool is_number(const std::string& s);
+
 	private:
 		static bool isEmpChar(const char);
 

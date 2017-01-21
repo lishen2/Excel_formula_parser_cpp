@@ -439,19 +439,13 @@ namespace ExcelFormula
 			}
 
 			if ((pToken->getType() == Token::Operand) && (pToken->getSubtype() == Token::Nothing)) {
-				double d;
-				//bool isNumber = double.TryParse(pToken.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d);
-				stringstream doubleConv;
-				doubleConv << pToken->getValue();
-				doubleConv >> d;
-
-				if (doubleConv.fail())
-					if ((pToken->getStrValue().compare("TRUE") == 0) || (pToken->getStrValue().compare("FALSE") == 0)) 
-						pToken->setSubtype(Token::Logical);
-					else 
-						pToken->setSubtype(Token::Range);            
+				if (StrUtils::is_number(pToken->getStrValue()))
+					pToken->setSubtype(Token::Number);
 				else
-					pToken->setSubtype(Token::Number);          
+					if ((pToken->getStrValue().compare("TRUE") == 0) || (pToken->getStrValue().compare("FALSE") == 0))
+						pToken->setSubtype(Token::Logical);
+					else
+						pToken->setSubtype(Token::Range);
 
 				m_tmpAry.add(pToken);
 				continue;

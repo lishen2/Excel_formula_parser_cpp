@@ -28,7 +28,7 @@ namespace ExcelFormula
 	}
 
 	//! return printable string
-	const char* Token::getPrintableString()
+	const string Token::getPrintableString()
 	{
 		string printableStr = m_value + " ";
 
@@ -104,7 +104,7 @@ namespace ExcelFormula
 				printableStr += "<Union>";
 				break;
 		}//token subtype switch
-		return printableStr.c_str();
+		return printableStr;
 	} //func  getPrintableStr
 
 	Token* Token::clone()
