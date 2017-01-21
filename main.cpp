@@ -8,7 +8,7 @@ using std::string;
 using ExcelFormula::Token;
 using ExcelFormula::FormulaParser;
 
-void printIntend(int i)
+void printIndent(int i)
 {
 	for(int j = 0; j < i; ++j)
 	{
@@ -23,20 +23,20 @@ void printParser(FormulaParser& parser)
 	cout << "Formula:" << parser.getFormula() << endl;
 	cout << "Tokens:" << endl;
 	
-	int intend = 0;
+	int indent = 0;
 	for(vector<Token*>::iterator it = tokens.begin();
 			it != tokens.end();
 			++it)
 	{
 		if((*it)->getSubtype() == Token::Start)
 		{
-			++intend;
+			++indent;
 		}
-		printIntend(intend);
+		printIndent(indent);
 		cout << (*it)->getPrintableString() << endl;
 		if((*it)->getSubtype() == Token::Stop)
 		{
-			--intend;
+			--indent;
 		}
 	}
 
