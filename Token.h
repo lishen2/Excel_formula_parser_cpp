@@ -80,7 +80,7 @@ namespace ExcelFormula
 			}
 
 			//! get printable token string
-			const char* getPrintableString();
+			const string getPrintableString();
 
 			//! duplicate a another token
 			Token* clone();
